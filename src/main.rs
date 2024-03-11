@@ -4,6 +4,7 @@ use std::{
     io::{BufRead, BufReader, Write},
     net::TcpListener,
     net::TcpStream,
+    thread,
 };
 
 #[derive(Debug)]
@@ -155,7 +156,9 @@ fn main() {
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
     for stream in listener.incoming() {
         match stream {
-            Ok(stream) => handle_stream(stream),
+            Ok(stream) => {
+                thread::spawn(move || handle_stream(stream));
+            }
             Err(e) => println!("Error: {}", e),
         }
     }
