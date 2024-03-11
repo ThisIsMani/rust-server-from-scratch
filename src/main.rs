@@ -88,7 +88,10 @@ impl Request {
         self.inner
             .split('\n')
             .into_iter()
-            .filter_map(|data| data.split_once(": "))
+            .filter_map(|data| {
+                data.strip_suffix("\r")
+                    .and_then(|header| header.split_once(": "))
+            })
             .collect()
     }
 }
@@ -136,7 +139,6 @@ fn echo(req: Request) -> ServerResult<Response> {
 
 fn user_agent(req: Request) -> ServerResult<Response> {
     let headers = req.get_headers();
-    println!("{:#?}", headers);
     headers
         .into_iter()
         .find(|(name, _)| name == &"User-Agent")
