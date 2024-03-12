@@ -7,10 +7,7 @@ pub fn home(_: request::Request) -> types::ServerResult<response::Response> {
 }
 
 pub fn echo(req: request::Request) -> types::ServerResult<response::Response> {
-    let path_str = req.get_path_str()?;
-    let echo_string = path_str
-        .strip_prefix("/echo/")
-        .ok_or(types::ServerErrors::InternalServerError)?;
+    let echo_string = req.get_extra_path();
     Ok(response::Response::Text(echo_string.to_owned()))
 }
 
@@ -23,18 +20,27 @@ pub fn user_agent(req: request::Request) -> types::ServerResult<response::Respon
         .ok_or(types::ServerErrors::BadRequest)
 }
 
-pub fn files(req: request::Request) -> types::ServerResult<response::Response> {
+pub fn file_get(req: request::Request) -> types::ServerResult<response::Response> {
     let args = env::args().collect::<Vec<String>>();
     let directory = args.get(2).ok_or(types::ServerErrors::BadRequest)?;
 
-    let path_str = req.get_path_str()?;
-    let file_name = path_str
-        .strip_prefix("/files/")
-        .ok_or(types::ServerErrors::InternalServerError)?;
+    let file_name = req.get_extra_path();
 
     let file_path = format!("{}/{}", directory, file_name);
     let contents =
         fs::read_to_string(file_path).map_err(|_| types::ServerErrors::ObjectNotFound)?;
 
     Ok(response::Response::OctetStream(contents))
+}
+
+pub fn file_post(req: request::Request) -> types::ServerResult<response::Response> {
+    let args = env::args().collect::<Vec<String>>();
+    let directory = args.get(2).ok_or(types::ServerErrors::BadRequest)?;
+
+    let file_name = req.get_extra_path();
+
+    let file_path = format!("{}/{}", directory, file_name);
+    fs::write(file_path, req.get_body()).map_err(|_| types::ServerErrors::InternalServerError)?;
+
+    Ok(response::Response::Created)
 }

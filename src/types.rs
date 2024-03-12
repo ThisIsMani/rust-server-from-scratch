@@ -3,7 +3,7 @@ use crate::{request, response};
 #[derive(Debug)]
 pub enum ServerErrors {
     InternalServerError,
-    PathNotFound,
+    UrlNotFound,
     BadRequest,
     ObjectNotFound,
 }

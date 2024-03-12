@@ -7,12 +7,14 @@ pub enum Response {
     BadRequest,
     ServerError,
     OctetStream(String),
+    Created,
 }
 
 impl Response {
     pub fn get_string(&self) -> String {
         match self {
             Response::StatusOk => "HTTP/1.1 200 OK\r\n\r\n".to_string(),
+            Response::Created => "HTTP/1.1 201 Created\r\n\r\n".to_string(),
             Response::Text(text) => format!(
                 "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}\r\n",
                 text.len(),
@@ -32,7 +34,7 @@ impl Response {
     pub fn from_error(err: types::ServerErrors) -> Self {
         match err {
             types::ServerErrors::InternalServerError => Response::ServerError,
-            types::ServerErrors::PathNotFound => Response::NotFound,
+            types::ServerErrors::UrlNotFound => Response::NotFound,
             types::ServerErrors::BadRequest => Response::BadRequest,
             types::ServerErrors::ObjectNotFound => Response::NotFound,
         }
